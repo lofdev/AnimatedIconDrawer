@@ -10,7 +10,6 @@
 
 @implementation AnimatedIconDrawer
 
-@synthesize uuid;
 
 #pragma mark - Overloadable methods for display metrics
 
@@ -43,11 +42,8 @@
     AnimatedIconDrawer *drawer = [[AnimatedIconDrawer alloc] init];
     drawer.grid = layout;
     
-    //Delete me
-    //drawer.backgroundColor = [UIColor grayColor].CGColor;
-    
     [drawer setOpenDirection:direction];
-
+    
     int element_count = [elements count];
 
     NSMutableArray *setupArray = [[NSMutableArray alloc] initWithCapacity:element_count];
@@ -55,11 +51,10 @@
     for (int x = 0; x < element_count; x++) {
         CALayer *new_element = [CALayer layer];
 
-        //new_element.frame = CGRectMake([drawer margin], [drawer margin], [drawer squareSize], [drawer squareSize]);
         new_element.frame = [drawer getElementRectForElementCount:0];
         
         
-        //  We can
+        //  We can accept UIColors or UIImages
         if ([[elements objectAtIndex:x] isKindOfClass:[UIColor class]]) {
             new_element.backgroundColor = ((UIColor *)[elements objectAtIndex:x]).CGColor;
         }
@@ -80,6 +75,12 @@
     drawer.elements = setupArray;
 
     //  Set the drawer's frame
+    if (direction == AIDOPENS_UPLEFT || direction == AIDOPENS_UPRIGHT) {
+        origin.y -= (drawer.grid.y - 1) * ([drawer margin] + [drawer squareSize]);
+    }
+    if (direction == AIDOPENS_UPLEFT || direction == AIDOPENS_DOWNLEFT) {
+        origin.x -= (drawer.grid.x - 1) * ([drawer margin] + [drawer squareSize]);
+    }
     [drawer setFrame:CGRectMake(origin.x, origin.y, [drawer closedframeSize], [drawer closedframeSize])];
 
     return drawer;
@@ -88,17 +89,6 @@
 
 -(void)setOpenDirection:(NSInteger)direction {
     _open_direction = direction;
-    
-    if (direction == AIDOPENS_DOWNLEFT) {
-        /* for (int x=0; x<[_elements count]; x++) {
-            ((CALayer *)[_elements objectAtIndex:x]).frame = [self getElementRectForElementCount: (_grid.x - 1) * _grid.y ];
-        } */
-        //self.bounds = [self getElementRectForElementCount: (_grid.x - 1) * _grid.y ];
-        self.bounds = CGRectMake(self.frame.origin.x + ((_grid.x - 1) * ([self margin] + [self squareSize])),
-                                 self.frame.origin.y,
-                                 [self closedframeSize],
-                                 [self closedframeSize]);
-    }
 }
 
 
@@ -138,7 +128,7 @@
         ((CALayer *)[self.elements objectAtIndex:x]).zPosition = element_count - x;
     }
 }
-    
+
 
 #pragma mark - User interaction methods - exposed
 
@@ -162,7 +152,7 @@
 #pragma mark - User interaction support methods
 -(void)toggleOpenClose {
 
-    if (self.frame.size.height == [self closedframeSize] && self.frame.size.width == [self closedframeSize]) {
+    if (!_is_open) {
         [self open];
     }
     else {
@@ -172,7 +162,8 @@
 }
 
 -(void)close {
-
+    
+    _is_open = NO;
     [CATransaction begin];
     [CATransaction setAnimationDuration:0.25];
     
@@ -185,35 +176,11 @@
 
     [CATransaction commit];
 
-    //  Set the frame & bounds
-    if (_open_direction == AIDOPENS_DOWNLEFT) {
-        self.frame = CGRectMake(self.frame.origin.x + ((_grid.x - 1) * ([self margin] + [self squareSize])),
-                                self.frame.origin.y,
-                                [self closedframeSize],
-                                [self closedframeSize]);
-        
-        self.bounds = CGRectMake(stack_frame_location.origin.x - [self margin], stack_frame_location.origin.y - [self margin], [self closedframeSize], [self closedframeSize]) ;
-    }
-    if (_open_direction == AIDOPENS_DOWNRIGHT) {
-        self.frame = CGRectMake(self.frame.origin.x,
-                                self.frame.origin.y,
-                                [self closedframeSize],
-                                [self closedframeSize]);
-    }
-
 }
 
 -(void)open {
     
-    //  Set the frame & bounds
-    if (_open_direction == AIDOPENS_DOWNLEFT) {
-        self.frame = CGRectMake(self.frame.origin.x - ((_grid.x - 1) * ([self margin] + [self squareSize])), self.frame.origin.y, (_grid.x * ([self margin] + [self squareSize])) + [self margin], (_grid.y * ([self margin] + [self squareSize])) + [self margin]);
-        self.bounds = CGRectMake(0, 0, self.frame.size.width, self.frame.size.height);
-    }
-    if (_open_direction == AIDOPENS_DOWNRIGHT) {
-        self.frame = CGRectMake(self.frame.origin.x, self.frame.origin.y, (_grid.x * ([self margin] + [self squareSize])) + [self margin], (_grid.y * ([self margin] + [self squareSize])) + [self margin]);
-        self.bounds = CGRectMake(0, 0, self.frame.size.width, self.frame.size.height);
-    }
+    _is_open = YES;
     
     [CATransaction begin];
     [CATransaction setAnimationDuration:0.25];

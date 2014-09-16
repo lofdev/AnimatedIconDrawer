@@ -19,7 +19,7 @@ static const int AIDOPENS_UPLEFT =      315;
 @property (nonatomic) CGPoint grid;
 @property (nonatomic) CGPoint size;
 @property (nonatomic) NSInteger open_direction;
-@property (nonatomic, copy) NSString *uuid;
+@property (nonatomic) BOOL is_open;
 
 
 +(AnimatedIconDrawer *)initWithOriginLayoutDirectionAndElements:(CGPoint)origin layout:(CGPoint)layout direction:(NSInteger)direction elements:(NSArray *)elements;
