@@ -1,9 +1,15 @@
 //
 //  AnimatedIconDrawer.m
-//  CA Learning
 //
 //  Created by Dave Loftis on 9/14/14.
 //  Copyright (c) 2014 Dave Loftis. All rights reserved.
+//
+//  Contact me:
+//      dave.loftis@gmail.com
+//      @lofdev
+//
+//  This repository:
+//      https://github.com/lofdev/AnimatedIconDrawer
 //
 
 #import "AnimatedIconDrawer.h"
@@ -39,18 +45,19 @@
 
 +(AnimatedIconDrawer *)initWithOriginLayoutDirectionAndElements:(CGPoint)origin layout:(CGPoint)layout direction:(NSInteger)direction elements:(NSArray *)elements  {
 
+    //  Create the object
     AnimatedIconDrawer *drawer = [[AnimatedIconDrawer alloc] init];
     drawer.grid = layout;
-    
     [drawer setOpenDirection:direction];
     
+    //  Draw all the element on a "closed" drawer
     int element_count = [elements count];
-
     NSMutableArray *setupArray = [[NSMutableArray alloc] initWithCapacity:element_count];
-
+    
     for (int x = 0; x < element_count; x++) {
         CALayer *new_element = [CALayer layer];
 
+        //  Everything gets drawn in the same place, since the drawer is closed
         new_element.frame = [drawer getElementRectForElementCount:0];
         
         
@@ -74,13 +81,15 @@
     //  Keep reference to the elements in the drawer
     drawer.elements = setupArray;
 
-    //  Set the drawer's frame
+    //  Adjust the drawer's frame if we're drawing up or left
     if (direction == AIDOPENS_UPLEFT || direction == AIDOPENS_UPRIGHT) {
         origin.y -= (drawer.grid.y - 1) * ([drawer margin] + [drawer squareSize]);
     }
     if (direction == AIDOPENS_UPLEFT || direction == AIDOPENS_DOWNLEFT) {
         origin.x -= (drawer.grid.x - 1) * ([drawer margin] + [drawer squareSize]);
     }
+    
+    //  Set the frame for the object
     [drawer setFrame:CGRectMake(origin.x, origin.y, [drawer closedframeSize], [drawer closedframeSize])];
 
     return drawer;
@@ -99,10 +108,11 @@
 //  Sets the frame for an element based on grid layout and position in the list of layer elements
 -(CGRect)getElementRectForElementCount:(NSInteger)element_count {
 
-    
+    //  Assuming down-then-right, where should the icon be drawn
     float row = element_count % (int) roundf(_grid.y);
     float column = (element_count - row) / (int) roundf(_grid.y);
     
+    //  If we are opening up or to the left, we need to change where the icon is drawn
     if (self.open_direction == AIDOPENS_DOWNLEFT || self.open_direction == AIDOPENS_UPLEFT) {
         column = (self.grid.x - 1) - column;
     }
@@ -110,11 +120,14 @@
         row = (self.grid.y - 1) - row;
     }
     
+    // Set the frame
     return CGRectMake(([self margin] * (column)) + (column * [self squareSize]) + [self margin],
                       ([self margin] * (row)) + (row * [self squareSize]) + [self margin],
                       [self squareSize],
                       [self squareSize]);
 }
+
+
 
 //  Size of the element when closed
 -(float)closedframeSize {
@@ -132,21 +145,34 @@
 
 #pragma mark - User interaction methods - exposed
 
+/*
+ *  toggleOpenCloseWithTappedLayer
+ *  ==============================
+ *  When this is called, we set the clicked element to live at the top of the stacked layers,
+ *  so that it takes over the closed state icon, then we collapse all the icons to a single place
+ *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 -(NSInteger)toggleOpenCloseWithTappedLayer:(CALayer *)layer {
 
-
+    //  We get an object id, so we loop through the elements to see which one matches
+    //  If nothing matches, we return -1
     NSInteger clicked_element = -1;
     int element_count = [self.elements count];
     for (int x=0; x < element_count; x++) {
         if (((CALayer *)[self.elements objectAtIndex:x]).modelLayer == layer.modelLayer) {
+            
+            //  We need to return the element placement
             clicked_element = x;
+            
+            //  Move the layer to the top
             ((CALayer *)[self.elements objectAtIndex:x]).zPosition = 1000.0f;
 
+            //  Open or close the drawer
             [self toggleOpenClose];
         }
 
     }
-    return clicked_element;
+    return clicked_element;  // This should be a protocol?
 }
 
 #pragma mark - User interaction support methods
@@ -158,7 +184,6 @@
     else {
         [self close];
     }
-
 }
 
 -(void)close {
@@ -169,7 +194,7 @@
     
     CGRect stack_frame_location = [self getElementRectForElementCount:0];
     
-    //  Move subviews
+    //  Move subviews to the "closed" point
     for (int x=0; x < [_elements count]; x++) {
        [(CALayer *)[_elements objectAtIndex:x] setFrame:[self getElementRectForElementCount:0] ];
     }
@@ -185,12 +210,11 @@
     [CATransaction begin];
     [CATransaction setAnimationDuration:0.25];
 
-    //  Move subviews
+    //  Move subviews to the "open" position
     for (int x=0; x < [_elements count]; x++) {
         [(CALayer *)[_elements objectAtIndex:x] setFrame:[self getElementRectForElementCount:x]];
     }
     
-
     [CATransaction commit];
     [self resetSubviewDisplayOrder];
 }
