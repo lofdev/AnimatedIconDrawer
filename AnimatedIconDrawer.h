@@ -8,13 +8,21 @@
 
 #import <QuartzCore/QuartzCore.h>
 
+static const int AIDOPENS_DOWNRIGHT =   135;
+static const int AIDOPENS_DOWNLEFT =    225;
+static const int AIDOPENS_UPRIGHT =     45;
+static const int AIDOPENS_UPLEFT =      315;
+
 @interface AnimatedIconDrawer : CALayer
 
 @property (nonatomic, copy) NSArray *elements;
 @property (nonatomic) CGPoint grid;
 @property (nonatomic) CGPoint size;
+@property (nonatomic) NSInteger open_direction;
+@property (nonatomic, copy) NSString *uuid;
 
-+(AnimatedIconDrawer *)initWithOriginLayoutAndElements:(CGPoint)origin layout:(CGPoint)layout elements:(NSArray *)elements;
+
++(AnimatedIconDrawer *)initWithOriginLayoutDirectionAndElements:(CGPoint)origin layout:(CGPoint)layout direction:(NSInteger)direction elements:(NSArray *)elements;
 -(NSInteger)toggleOpenCloseWithTappedLayer:(CALayer *)layer;
 
 
