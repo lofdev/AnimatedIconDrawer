@@ -40,7 +40,7 @@ Example from my code:
 Options
 -------
 Direction can be one of the following, indicating the direction in which the drawer opens:
- * AIDOPENS_UPRIGHT
- * AIDOPENS_UPLEFT
- * AIDOPENS_DOWNLEFT
- * AIDOPENS_DOWNRIGHT
+ * `AIDOPENS_UPRIGHT`
+ * `AIDOPENS_UPLEFT`
+ * `AIDOPENS_DOWNLEFT`
+ * `AIDOPENS_DOWNRIGHT`
